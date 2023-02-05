@@ -1,12 +1,17 @@
-//Face Tracker using OpenCV and Arduino
-//by Shubham Santosh
+// Include the library
+#include <Servo.h>
 
-#include<Servo.h>
+// Create the servo object
+Servo liftMotor;
+Servo wipper;
+String command;
 
-Servo x;
 void setup() {
-  Serial.begin(9600);
-  x.attach(6);
+  liftMotor.attach(8);
+  wipper.attach(9); // attach the servo to our servo object
+  liftMotor.write(90); 
+  wipper.writeMicroseconds(700); 
+  Serial.begin(9600); // Begin the serial connection
 }
 
 void loop() {
@@ -14,7 +19,12 @@ void loop() {
   {
     if (Serial.read() == 'X')
     {
-      x_mid = Serial.parseInt();  // read center x-coordinate
-    }
+      liftMotor.write(80); // Turn the motor counterclockwise
+      delay(1500);
+      liftMotor.write(91); // Stop the motor
+      wipper.writeMicroseconds(700); // Turn the motor counterclockwise
+      delay(1500);
+      wipper.writeMicroseconds(2400); // Turn the swipper
+    } 
   }
 }

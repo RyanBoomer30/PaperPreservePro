@@ -7,11 +7,22 @@ import pytesseract
 from pdf2image import convert_from_path
 from gtts import gTTS 
 from playsound import playsound
+import serial
+import time
+
+arduino = serial.Serial('COM4', 9600)
+time.sleep(2)
+print("Connection to arduino...")
+
+def serial_commute(x_coord):
+	data = "X{0:f}".format(x_coord)
+	arduino.write(data.encode('utf-8'))
+	# print("Coordinate is :", data)
 
 def text_to_speech(text):
     tts = gTTS(text=text, lang='en')
     tts.save("speech.mp3")
-    os.system("mpg321 speech.mp3")
+    # os.system("mpg321 speech.mp3")
 
 # Define the window name and size
 window_name = "Capturing Images"
@@ -79,6 +90,10 @@ with dai.Device(pipeline) as device:
             img_path = os.path.join(save_dir, f"img_{img_index}.png")
             cv2.imwrite(img_path, right_half)
             img_index += 1
+
+            # Turn the page via arduino
+            serial_commute(1)
+            time.sleep(5)
         elif key == ord('q'):
             break
 
