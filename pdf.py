@@ -1,0 +1,102 @@
+import cv2
+import os
+from fpdf import FPDF
+import depthai as dai
+from PIL import Image
+import pytesseract
+from pdf2image import convert_from_path
+from gtts import gTTS 
+from playsound import playsound
+
+def text_to_speech(text):
+    tts = gTTS(text=text, lang='en')
+    tts.save("speech.mp3")
+    os.system("mpg321 speech.mp3")
+
+# Define the window name and size
+window_name = "Capturing Images"
+window_size = (1080, 1920)
+
+# Create pipeline
+pipeline = dai.Pipeline()
+
+# Define source and outputs
+camRgb = pipeline.create(dai.node.ColorCamera)
+xoutPreview = pipeline.create(dai.node.XLinkOut)
+
+xoutPreview.setStreamName("preview")
+
+# Properties
+camRgb.setPreviewSize(*window_size)
+camRgb.setBoardSocket(dai.CameraBoardSocket.RGB)
+camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+camRgb.setInterleaved(True)
+camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+
+# Create the OpenCV window
+cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+cv2.resizeWindow(window_name, *window_size)
+
+# Define the directory to save the images
+save_dir = "images"
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+
+# Initialize the image index
+img_index = 0
+
+cap = cv2.VideoCapture(0)
+
+# Linking
+camRgb.preview.link(xoutPreview.input)
+
+# Connect to device and start pipeline
+with dai.Device(pipeline) as device:
+
+    preview = device.getOutputQueue('preview')
+
+    while True:
+        previewFrame = preview.get()
+
+        # Show 'preview' frame as is (already in correct format, no copy is made)
+        cv2.imshow("preview", previewFrame.getFrame())
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord('s'):
+            # Save the image as a PNG file
+            img_path = os.path.join(save_dir, f"img_{img_index}.png")
+            rotated_image = cv2.rotate(previewFrame.getFrame(), cv2.ROTATE_90_CLOCKWISE)
+            cv2.imwrite(img_path, rotated_image)
+            img_index += 1
+        elif key == ord('q'):
+            break
+
+# Destroy the OpenCV window
+cv2.destroyAllWindows()
+
+# Combine the images into a single PDF file
+pdf_path = "book.pdf"
+pdf = FPDF()
+for i in range(img_index):
+    img_path = os.path.join(save_dir, f"img_{i}.png")
+    pdf.add_page()
+    pdf.image(img_path, 0, 0, 210, 297)
+pdf.output(pdf_path, "F")
+
+# Convert the PDF pages to images
+images = convert_from_path(pdf_path)
+
+# Initialize the OCR engine
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+# Iterate through the pages of the PDF
+for i, image in enumerate(images):
+    # OCR the image
+    text = pytesseract.image_to_string(image)
+    
+    # Print the text
+    print(f"Page {i + 1}:")
+    print(text)
+
+text_to_speech(text)
