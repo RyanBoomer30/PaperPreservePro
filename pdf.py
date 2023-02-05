@@ -66,7 +66,7 @@ with dai.Device(pipeline) as device:
         if key == ord('s'):
             # Save the image as a PNG file
             img_path = os.path.join(save_dir, f"img_{img_index}.png")
-            rotated_image = cv2.rotate(previewFrame.getFrame(), cv2.ROTATE_90_CLOCKWISE)
+            rotated_image = cv2.rotate(previewFrame.getFrame(), cv2.ROTATE_90_COUNTERCLOCKWISE)
             cv2.imwrite(img_path, rotated_image)
             img_index += 1
         elif key == ord('q'):
@@ -80,8 +80,25 @@ pdf_path = "book.pdf"
 pdf = FPDF()
 for i in range(img_index):
     img_path = os.path.join(save_dir, f"img_{i}.png")
-    pdf.add_page()
-    pdf.image(img_path, 0, 0, 210, 297)
+    cover = Image.open(img_path)
+    width, height = cover.size
+
+    # convert pixel in mm with 1px=0.264583 mm
+    width, height = float(width * 0.264583), float(height * 0.264583)
+
+    # given we are working with A4 format size 
+    pdf_size = {'P': {'w': 210, 'h': 297}, 'L': {'w': 297, 'h': 210}}
+
+    # get page orientation from image size 
+    orientation = 'P' if width < height else 'L'
+
+    #  make sure image size is not greater than the pdf format size
+    width = width if width < pdf_size[orientation]['w'] else pdf_size[orientation]['w']
+    height = height if height < pdf_size[orientation]['h'] else pdf_size[orientation]['h']
+
+    pdf.add_page(orientation=orientation)
+
+    pdf.image(img_path, 0, 0, width, height)
 pdf.output(pdf_path, "F")
 
 # Convert the PDF pages to images
