@@ -67,7 +67,17 @@ with dai.Device(pipeline) as device:
             # Save the image as a PNG file
             img_path = os.path.join(save_dir, f"img_{img_index}.png")
             rotated_image = cv2.rotate(previewFrame.getFrame(), cv2.ROTATE_90_COUNTERCLOCKWISE)
-            cv2.imwrite(img_path, rotated_image)
+
+            # Split the image in half vertically
+            frame_height, frame_width, _ = rotated_image.shape
+            left_half = rotated_image[:, :frame_width//2]
+            right_half = rotated_image[:, frame_width//2:]
+
+            cv2.imwrite(img_path, left_half)
+            img_index += 1
+            
+            img_path = os.path.join(save_dir, f"img_{img_index}.png")
+            cv2.imwrite(img_path, right_half)
             img_index += 1
         elif key == ord('q'):
             break
