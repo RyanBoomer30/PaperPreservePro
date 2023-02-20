@@ -3,7 +3,7 @@
 Best overall at MakeHarvard2023.
 
 ## Project: Automatic Book Digitizer
-	Building a Device that would automatically flip through and scan pages to convert the pages to digital text, to output pdf and audio files. Additionally, once the book is scanned, AI is able to answer questions regarding the text.
+Building a Device that would automatically flip through and scan pages to convert the pages to digital text, to output pdf and audio files. Additionally, once the book is scanned, AI is able to answer questions regarding the text.
   
 ## Features:
 - Automatic page flipping
