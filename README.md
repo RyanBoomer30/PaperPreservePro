@@ -1,5 +1,7 @@
 # Paper Preserve Pro
 
+IN 1994 BEZOS DIGITIZED BOOKSTORES
+IN 2023 WE DIGITIZED BOOKS
 Best overall at MakeHarvard2023.
 
 ## Project: Automatic Book Digitizer
